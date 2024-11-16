@@ -11,22 +11,24 @@ public class AccountDAO {
     private AccountDAO userDAO;
 
     //Checking for username and password in the database
-    public Account getUserByCredentials(Account user){
+    public List<Account> getUserByCredentials(Account user){
         Connection connection = ConnectionUtil.getConnection();
+        List <Account> users = new ArrayList<>();
         try{
-            String sql = "SELECT * FROM account WHERE username = ? AND password = ?;";
+            String sql = "SELECT * FROM account WHERE username = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1,user.getUsername());
-            preparedStatement.setString(2,user.getPassword());
-            ResultSet rs = preparedStatement.executeQuery(); // SInce username and password are unique, I am making an assumption that only one row will be returned
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()){
             Account account = new Account(rs.getInt("account_id"),rs.getString("username"),rs.getString("password"));
-            return account;
-        
+            users.add(account);
+            }
         }
         catch(SQLException e){
             System.out.println(e.getMessage()); //If an exception occurs, this will print out the error message in the debug console and returns null which is used for a different purpose
             return null;
         }
+        return users;
     }
 
     //DAO to insert user to the database

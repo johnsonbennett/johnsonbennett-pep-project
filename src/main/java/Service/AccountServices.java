@@ -26,7 +26,7 @@ public class AccountServices {
         else return null;
     }
 
-    public Account loginUser(Account user){
+    public List<Account> loginUser(Account user){
         return userDAO.getUserByCredentials(user);
     }
     
