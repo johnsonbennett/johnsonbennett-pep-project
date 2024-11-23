@@ -7,7 +7,7 @@ import Service.MessageServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.List;
+import java.util.Deque;
 
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -32,6 +32,8 @@ public class SocialMediaController {
         app.post("/messages", this::postNewMessageHandler);
         app.get("/messages",this::getAllPostsHandler);
         app.get("/messages/{message_id}",this::getIDMessage);
+        app.delete("/messages/{message_id}",this::deleteIDMessage);
+        app.get("/messages/{account_id}/message",this::getMessageUser);
         return app;
     }
 
@@ -77,7 +79,7 @@ public class SocialMediaController {
 
     //Handler to retrieve all messages available on the blog site
     private void getAllPostsHandler(Context ctx) throws JsonProcessingException {
-        List <Message> messages = messageServices.getAllMessage();
+        Deque <Message> messages = messageServices.getAllMessage();
         ctx.json(messages);
         ctx.status(200);
     }
@@ -86,8 +88,26 @@ public class SocialMediaController {
     private void getIDMessage(Context ctx) throws JsonProcessingException {
         String id = ctx.pathParam("message_id");
         int message_id = Integer.parseInt(id);
-        List<Message> message = messageServices.getMessageOnID(message_id);
-        ctx.json(message);
+        Message message = messageServices.getMessageOnID(message_id);
+        if(message != null) ctx.json(message);
+        ctx.status(200);
+    }
+
+    //Handler to delete message by message id
+    private void deleteIDMessage(Context ctx) throws JsonProcessingException {
+        String id = ctx.pathParam("message_id");
+        int message_id = Integer.parseInt(id);
+        Message message = messageServices.deleteById(message_id);
+        if(message !=null) ctx.json(message);
+        ctx.status(200);
+    }
+    
+    //Handler to retrieve a message based on poster
+    private void getMessageUser(Context ctx) throws JsonProcessingException {
+        String id = ctx.pathParam("posted_by");
+        int message_id = Integer.parseInt(id);
+        Message message = messageServices.getMessageOnID(message_id);
+        if(message != null) ctx.json(message);
         ctx.status(200);
     }
 

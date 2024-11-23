@@ -3,7 +3,7 @@ package Service;
 import Model.Message;
 import DAO.MessageDAO;
 
-import java.util.List;
+import java.util.Deque;
 
 public class MessageServices {
     private MessageDAO messageDAO;
@@ -18,7 +18,7 @@ public class MessageServices {
     }
 
     //Method to retrieve all messages posted on the blog site
-    public List<Message> getAllMessage(){
+    public Deque<Message> getAllMessage(){
         return messageDAO.getAllMessages();
     }
 
@@ -29,8 +29,27 @@ public class MessageServices {
     }
 
     //Method to retreive message based on message id
-    public List<Message> getMessageOnID(int message){
+    public Message getMessageOnID(int message){
         return messageDAO.getMessageByID(message);
+    }
+
+    //Method to delete a message with an id
+    public Message deleteById(int message_id){
+        if(messageDAO.deleteMessageByID(message_id) != null){
+            return messageDAO.deleteMessageByID(message_id);
+        }
+        else return null;
+    }
+    public Message updateById(String message_text,int message_id){
+        if(messageDAO.UpdateMessageByID(message_text,message_id) != null){
+            return messageDAO.deleteMessageByID(message_id);
+        }
+        else return null;
+    }
+
+    //Method to get all messages posted by a user
+    public Deque<Message> getMessageOnUser(int user){
+        return messageDAO.getMessageByUser(user);
     }
 
     

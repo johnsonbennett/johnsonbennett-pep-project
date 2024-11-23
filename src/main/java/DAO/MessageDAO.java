@@ -4,16 +4,16 @@ import Model.Message;
 import Util.ConnectionUtil;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class MessageDAO {
 
 
     //DAO to retrieve all messages available
-    public List<Message> getAllMessages(){
+    public Deque<Message> getAllMessages(){
         Connection connection = ConnectionUtil.getConnection();
-        List<Message> messages = new ArrayList<>();
+        Deque<Message> messages = new ArrayDeque<>();
         try {
             //Write SQL logic here
             String sql = "SELECT * FROM message;";
@@ -56,9 +56,9 @@ public class MessageDAO {
         }
 
         //Get message based on message id
-        public List<Message> getMessageByID(int message_id){
+        public Message getMessageByID(int message_id){
             Connection connection = ConnectionUtil.getConnection();
-            List <Message> userMessages = new ArrayList<>();
+            Deque <Message> userMessages = new ArrayDeque<>();
             try{
                 String sql = "SELECT * FROM message WHERE message_id = ?";
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -72,10 +72,81 @@ public class MessageDAO {
             catch (SQLException e){
                 System.out.println(e.getMessage());
                 return null;
-            }
-            return userMessages;
+            };
+            return userMessages.peekLast();
         }
 
         //Delete from blog with message id
+        public Message deleteMessageByID(int message_id){
+            Connection connection = ConnectionUtil.getConnection();
+            Deque <Message> deletedMessage = new ArrayDeque<>();
+            try{
+                String sql = "SELECT * FROM message WHERE message_id = ?";
+                String deletion = "DELETE FROM message WHERE message_id = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                PreparedStatement deletionStatement = connection.prepareStatement(deletion);
+                preparedStatement.setInt(1,message_id);
+                deletionStatement.setInt(1,message_id);
+                ResultSet rs = preparedStatement.executeQuery();
+                while(rs.next()){
+                    Message uMessage = new Message(rs.getInt("message_id"),rs.getInt("posted_by"),rs.getString("message_text"),rs.getLong("time_posted_epoch"));
+                    deletedMessage.add(uMessage);
+                }
+                deletionStatement.executeUpdate();
+            }
+            catch (SQLException e){
+                System.out.println(e.getMessage());
+                return null;
+            }
+            return deletedMessage.peekLast();
+        }
+
+        //Update blog based on message ID
+        public Message UpdateMessageByID(String message_text,int message_id){
+            Connection connection = ConnectionUtil.getConnection();
+            Deque <Message> updateMessage = new ArrayDeque<>();
+            try{
+                String sql = "SELECT * FROM message WHERE message_id = ?";
+                String update = "UPDATE (message_text) IN message WITH VALUES(?) WHERE message_id = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                PreparedStatement updateStatement = connection.prepareStatement(update);
+                preparedStatement.setInt(1,message_id);
+                updateStatement.setString(1,message_text);
+                updateStatement.setInt(2,message_id);
+                updateStatement.executeUpdate();
+                ResultSet rs = preparedStatement.executeQuery();
+                while(rs.next()){
+                    Message uMessage = new Message(rs.getInt("message_id"),rs.getInt("posted_by"),rs.getString("message_text"),rs.getLong("time_posted_epoch"));
+                    updateMessage.add(uMessage);
+                }
+            }
+            catch (SQLException e){
+                System.out.println(e.getMessage());
+                return null;
+            }
+            return updateMessage.peekLast();
+        }
+
+        //Show all message based on user
+        public Deque<Message> getMessageByUser(int user){
+            Connection connection = ConnectionUtil.getConnection();
+            Deque <Message> userMessages = new ArrayDeque<>();
+            try{
+                String sql = "SELECT * FROM message WHERE posted_by = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setInt(1,user);
+                ResultSet rs = preparedStatement.executeQuery();
+                while(rs.next()){
+                    Message uMessage = new Message(rs.getInt("message_id"),rs.getInt("posted_by"),rs.getString("message_text"),rs.getLong("time_posted_epoch"));
+                    userMessages.add(uMessage);
+                }
+            }
+            catch (SQLException e){
+                System.out.println(e.getMessage());
+                return null;
+            };
+            return userMessages;
+        }
+
 
 }

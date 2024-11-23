@@ -4,8 +4,7 @@ import Model.Account;
 import Util.ConnectionUtil;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class AccountDAO {
     private AccountDAO userDAO;
@@ -13,7 +12,7 @@ public class AccountDAO {
     //Checking for username and password in the database
     public Account loginUser(Account user){
         Connection connection = ConnectionUtil.getConnection();
-        List <Account> users = new ArrayList<>();
+        Deque <Account> users = new ArrayDeque<>();
         try{
             String sql = "SELECT * FROM account WHERE username = ? AND password = ?;";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -29,8 +28,9 @@ public class AccountDAO {
             System.out.println(e.getMessage()); //If an exception occurs, this will print out the error message in the debug console and returns null which is used for a different purpose
             return null;
         }
-        System.out.println(users.get(users.size()-1));
-        return users.get(users.size()-1);
+        System.out.println(users.peekLast());
+        if(users.isEmpty()) return null;
+        else return users.peekLast();
     }
 
     //DAO to insert user to the database
