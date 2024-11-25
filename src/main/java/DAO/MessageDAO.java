@@ -105,26 +105,32 @@ public class MessageDAO {
         public Message UpdateMessageByID(String message_text,int message_id){
             Connection connection = ConnectionUtil.getConnection();
             Deque <Message> updateMessage = new ArrayDeque<>();
-            try{
-                String sql = "SELECT * FROM message WHERE message_id = ?";
-                String update = "UPDATE (message_text) IN message WITH VALUES(?) WHERE message_id = ?";
-                PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                PreparedStatement updateStatement = connection.prepareStatement(update);
-                preparedStatement.setInt(1,message_id);
-                updateStatement.setString(1,message_text);
-                updateStatement.setInt(2,message_id);
-                updateStatement.executeUpdate();
-                ResultSet rs = preparedStatement.executeQuery();
-                while(rs.next()){
-                    Message uMessage = new Message(rs.getInt("message_id"),rs.getInt("posted_by"),rs.getString("message_text"),rs.getLong("time_posted_epoch"));
-                    updateMessage.add(uMessage);
+            System.out.println("Before if statement " +message_text);
+            if(message_text.isEmpty() || message_text.length() <=255 ){
+                System.out.println("Inside if");
+                try{
+                    String sql = "SELECT * FROM message WHERE message_id = ?";
+                    String update = "UPDATE message SET message_text=? WHERE message_id = ?";
+                    PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                    PreparedStatement updateStatement = connection.prepareStatement(update);
+                    preparedStatement.setInt(1,message_id);
+                    updateStatement.setString(1,message_text);
+                    updateStatement.setInt(2,message_id);
+                    updateStatement.executeUpdate();
+                    System.out.println("Update done");
+                    ResultSet rs = preparedStatement.executeQuery();
+                    while(rs.next()){
+                        Message uMessage = new Message(rs.getInt("message_id"),rs.getInt("posted_by"),rs.getString("message_text"),rs.getLong("time_posted_epoch"));
+                        updateMessage.addLast(uMessage);
+                    }
                 }
-            }
-            catch (SQLException e){
-                System.out.println(e.getMessage());
-                return null;
-            }
-            return updateMessage.peekLast();
+                catch (SQLException e){
+                    System.out.println(e.getMessage());
+                    return null;
+                }
+                return updateMessage.peekLast();
+        }
+        else return null;
         }
 
         //Show all message based on user
@@ -132,13 +138,14 @@ public class MessageDAO {
             Connection connection = ConnectionUtil.getConnection();
             Deque <Message> userMessages = new ArrayDeque<>();
             try{
+                System.out.println("Entered try");
                 String sql = "SELECT * FROM message WHERE posted_by = ?";
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
                 preparedStatement.setInt(1,user);
                 ResultSet rs = preparedStatement.executeQuery();
                 while(rs.next()){
                     Message uMessage = new Message(rs.getInt("message_id"),rs.getInt("posted_by"),rs.getString("message_text"),rs.getLong("time_posted_epoch"));
-                    userMessages.add(uMessage);
+                    userMessages.addLast(uMessage);
                 }
             }
             catch (SQLException e){

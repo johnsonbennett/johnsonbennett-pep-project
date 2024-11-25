@@ -6,6 +6,7 @@ import Service.AccountServices;
 import Service.MessageServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Deque;
 
@@ -34,6 +35,7 @@ public class SocialMediaController {
         app.get("/messages/{message_id}",this::getIDMessage);
         app.delete("/messages/{message_id}",this::deleteIDMessage);
         app.get("/messages/{account_id}/message",this::getMessageUser);
+        app.patch("/messages/{message_id}",this::updateIDMessage);
         return app;
     }
 
@@ -98,17 +100,35 @@ public class SocialMediaController {
         String id = ctx.pathParam("message_id");
         int message_id = Integer.parseInt(id);
         Message message = messageServices.deleteById(message_id);
+        System.out.println(message);
         if(message !=null) ctx.json(message);
         ctx.status(200);
     }
     
     //Handler to retrieve a message based on poster
     private void getMessageUser(Context ctx) throws JsonProcessingException {
-        String id = ctx.pathParam("posted_by");
+        String id = ctx.pathParam("account_id");
         int message_id = Integer.parseInt(id);
         Message message = messageServices.getMessageOnID(message_id);
+        System.out.println(message);
         if(message != null) ctx.json(message);
         ctx.status(200);
+    }
+    //Handle to update by ID
+    private void updateIDMessage(Context ctx) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        String id = ctx.pathParam("message_id");
+        int message_id = Integer.parseInt(id);
+        String message = ctx.body();
+        JsonNode rootNode = mapper.readTree(message);
+        String message_text = rootNode.path("message_text").asText();
+        Message messages = messageServices.updateById(message_text,message_id);
+        System.out.println(message);
+        if(messages !=null) {
+            ctx.json(message);
+            ctx.status(200);
+        }
+        else ctx.status(400);
     }
 
 
