@@ -34,7 +34,7 @@ public class SocialMediaController {
         app.get("/messages",this::getAllPostsHandler);
         app.get("/messages/{message_id}",this::getIDMessage);
         app.delete("/messages/{message_id}",this::deleteIDMessage);
-        app.get("/messages/{account_id}/message",this::getMessageUser);
+        app.get("/accounts/{account_id}/messages",this::getMessageUser);
         app.patch("/messages/{message_id}",this::updateIDMessage);
         return app;
     }
@@ -107,9 +107,12 @@ public class SocialMediaController {
     
     //Handler to retrieve a message based on poster
     private void getMessageUser(Context ctx) throws JsonProcessingException {
+        System.out.println("Enter Handler");
         String id = ctx.pathParam("account_id");
+        System.out.println(id);
         int message_id = Integer.parseInt(id);
-        Message message = messageServices.getMessageOnID(message_id);
+        System.out.println("Accound_id: " + message_id);
+        Deque<Message> message = messageServices.getMessageOnUser(message_id);
         System.out.println(message);
         if(message != null) ctx.json(message);
         ctx.status(200);
@@ -125,7 +128,7 @@ public class SocialMediaController {
         Message messages = messageServices.updateById(message_text,message_id);
         System.out.println(message);
         if(messages !=null) {
-            ctx.json(message);
+            ctx.json(messages);
             ctx.status(200);
         }
         else ctx.status(400);
